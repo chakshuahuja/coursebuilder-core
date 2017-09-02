@@ -102,13 +102,6 @@ class GatheringsHandlerMixin(object):
         template_items = []
         for item in items:
             item = transforms.entity_to_dict(item)
-            date = item.get('date')
-            if date:
-                date = datetime.datetime.combine(
-                    date, datetime.time(0, 0, 0, 0))
-                item['date'] = (
-                    date - datetime.datetime(1970, 1, 1)).total_seconds() * 1000
-
             # add 'edit' actions
             if GatheringsRights.can_edit(self):
                 item['edit_action'] = self.get_gathering_action_url(
@@ -293,12 +286,19 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
                 'excludedCustomTags': tags.EditorBlacklists.COURSE_SCOPE},
             optional=True))
         schema.add_property(schema_fields.SchemaField(
-            'date', 'Date', 'datetime',
+            'start_time', 'Start Time', 'datetime',
             description=messages.GATHERING_DATE_DESCRIPTION,
             extra_schema_dict_values={
                 '_type': 'datetime',
                 'className': 'inputEx-CombineField gcb-datetime '
-                'inputEx-fieldWrapper date-only inputEx-required'}))
+                'inputEx-fieldWrapper inputEx-required'}))
+        schema.add_property(schema_fields.SchemaField(
+            'end_time', 'End Time', 'datetime',
+            description=messages.GATHERING_DATE_DESCRIPTION,
+            extra_schema_dict_values={
+                '_type': 'datetime',
+                'className': 'inputEx-CombineField gcb-datetime '
+                'inputEx-fieldWrapper inputEx-required'}))
         schema.add_property(schema_fields.SchemaField(
             'is_draft', 'Status', 'boolean',
             description=messages.GATHERING_STATUS_DESCRIPTION,
@@ -332,12 +332,6 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
         schema = GatheringsItemRESTHandler.SCHEMA()
 
         entity_dict = transforms.entity_to_dict(entity)
-
-        # Format the internal date object as ISO 8601 datetime, with time
-        # defaulting to 00:00:00
-        date = entity_dict['date']
-        date = datetime.datetime(date.year, date.month, date.day)
-        entity_dict['date'] = date
 
         json_payload = transforms.dict_to_json(entity_dict)
         transforms.send_json_response(
@@ -376,8 +370,6 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
                 GatheringsStudentHandler.URL.lstrip('/'))
             news.CourseNewsDao.add_news_item(item)
 
-        # The datetime widget returns a datetime object and we need a UTC date.
-        update_dict['date'] = update_dict['date'].date()
         del update_dict['key']  # Don't overwrite key member method in entity.
         transforms.dict_to_entity(entity, update_dict)
 
@@ -474,7 +466,8 @@ class GatheringEntity(entities.BaseEntity):
     """
 
     title = db.StringProperty(indexed=False)
-    date = db.DateProperty()
+    start_time = db.DateTimeProperty()
+    end_time = db.DateTimeProperty()
     html = db.TextProperty(indexed=False)
     is_draft = db.BooleanProperty()
 
@@ -486,7 +479,7 @@ class GatheringEntity(entities.BaseEntity):
         items = models.MemcacheManager.get(memcache_key)
         if items is None:
             items = list(common_utils.iter_all(GatheringEntity.all()))
-            items.sort(key=lambda item: item.date, reverse=True)
+            items.sort(key=lambda item: item.start_time, reverse=True)
             if locale:
                 cls._translate_content(items)
 
@@ -510,7 +503,8 @@ class GatheringEntity(entities.BaseEntity):
     def make(cls, title, html, is_draft):
         entity = cls()
         entity.title = title
-        entity.date = utc.now_as_datetime().date()
+        entity.start_time = utc.now_as_datetime()
+        entity.end_time = entitity.start_time + datetime.timedelta(minutes=30)
         entity.html = html
         entity.is_draft = is_draft
         return entity

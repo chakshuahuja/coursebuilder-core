@@ -37,6 +37,10 @@
           {# I18N: Navbar tab. #}
           <a href="announcements">{{ gettext('Announcements') }}</a>
         </li>
+        <li {% if navbar.announcements %}class='active'{% endif %}>
+          {# I18N: Navbar tab. #}
+          <a href="gatherings">{{ gettext('Gatherings') }}</a>
+        </li>
         <li {% if navbar.course %}class='active'{% endif %}>
           {# I18N: Navbar tab. #}
           <a href="course">{{ gettext('Course') }}</a>
