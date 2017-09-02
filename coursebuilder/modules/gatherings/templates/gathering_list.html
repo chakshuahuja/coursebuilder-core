@@ -1,0 +1,70 @@
+{% if gatherings.add_action %}
+  <div class="gcb-button-toolbar">
+    <form id='gcb-add-gathering'
+          action='{{ gatherings.add_action }}'
+          method='POST'>
+      <input type="hidden"
+             name="xsrf_token"
+             value="{{ gatherings.add_xsrf_token }}">
+      <button class="gcb-button" type="submit">Add Gathering</button>
+    </form>
+  </div>
+{% endif %}
+
+<div class="gcb-list gcb-list--autostripe xsrf-token-holder"
+    data-status-xsrf-token-gathering="{{ status_xsrf_token }}">
+  <table>
+    <thead>
+      <tr>
+        <th class="gcb-list__cell--icon"></th>
+        <th class="gcb-list__cell--icon"></th>
+        <th>Title</th>
+        <th class="gcb-list__cell--icon"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in gatherings.children %}
+        <tr>
+
+          <td>
+            <div class="material-icons icon-draft-status gcb-list__icon gcb-list__icon--rowhover
+            {% if item.is_draft %}private{% else %}public{% endif %}"
+            data-component-type="gathering" data-key="{{ item.key }}"></div>
+          </td>
+
+          <td>
+            <a href="gatherings#{{ item.key }}" target="_blank" class="gcb-list__icon gcb-list__icon--rowhover material-icons">open_in_new</a>
+          </td>
+
+          <td>
+            <a href="{{item.edit_action}}">
+              {{item.title}}
+            </a>
+          </td>
+
+          <td>
+            {% if item.delete_action %}
+            <form id='gcb-delete-gathering-{{ loop.index0 }}'
+                  action='{{ item.delete_action }}'
+                  method='POST'>
+              <input type="hidden"
+                     name="xsrf_token"
+                     value="{{ item.delete_xsrf_token }}">
+              <button
+                 class="material-icons gcb-list__icon gcb-list__icon--rowhover"
+                 type="submit"
+                 onclick='return confirm("Delete this item?");'>delete</button>
+            </form>
+            {% endif %}
+          </td>
+
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not gatherings.children|length %}
+    <div class="gcb-list__empty-message-wrapper">
+      <div class="gcb-list__empty-message">No items</div>
+    </div>
+  {% endif %}
+</div>
