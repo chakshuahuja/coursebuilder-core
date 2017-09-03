@@ -396,7 +396,7 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
             return
 
         user = self.get_user()
-        # TODO (chaks) Check for if user is a student
+
         # Check if already a participants
         existing = GatheringsUsersEntity.all().filter(
             'user =',
@@ -448,6 +448,18 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
         payload = request.get('payload')
         update_dict = transforms.json_to_dict(
             transforms.loads(payload), schema.get_json_schema_dict())
+
+        if update_dict['start_time'] > update_dict['end_time']:
+            transforms.send_json_response(
+                self,
+                400,
+                'End time is earlier than Start time',
+                {
+                    'start_time': str(update_dict['start_time']),
+                    'end_time': str(update_dict['end_time']),
+                }
+            )
+            return
         if entity.is_draft and not update_dict.get('set_draft'):
             item = news.NewsItem(
                 str(TranslatableResourceGathering.key_for_entity(entity)),
