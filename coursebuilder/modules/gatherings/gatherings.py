@@ -279,7 +279,7 @@ class GatheringsDashboardHandler(
 
 class GatheringsItemRESTHandler(utils.BaseRESTHandler):
     """Provides REST API for an gathering."""
-
+    #TODO (chaks): Dont like the /item here
     URL = '/rest/gatherings/item'
 
     ACTION = 'gathering-put'
@@ -355,6 +355,49 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
             self, 200, 'Success.',
             payload_dict=json_payload,
             xsrf_token=crypto.XsrfTokenManager.create_xsrf_token(self.ACTION))
+
+    def post(self):
+        '''Handles adding of participants'''
+        # TODO (chaks): Handle Unjoining of event.
+        key = self.request.get('key')
+        join = self.request.get('action') == 'join'
+        gathering = GatheringEntity.get(key) if key else None
+        if not gathering:
+            transforms.send_json_response(
+                self,
+                404,
+                'Object not found',
+                {'key', key}
+            )
+            return
+
+        user = self.get_user()
+        # TODO (chaks) Check for if user is a student
+        # Check if already a participants
+        existing = GatheringsUsersEntity.all().filter(
+            'user =',
+            user.user_id()
+        ).filter(
+            'gathering = ',
+            gathering.key(),
+        ).get()
+        if existing and join:
+            transforms.send_json_response(self, 200, {'msg':'Already Participant.'})
+            return
+        if not existing and not join:
+            transforms.send_json_response(self, 200, {'msg':'Already Left.'})
+            return
+
+        if join:
+            GatheringsUsersEntity(
+                gathering=gathering.key(),
+                user=user.user_id(),
+            ).put()
+            transforms.send_json_response(self, 200, {'msg': 'Added Participant'})
+            return
+        existing.delete()
+        transforms.send_json_response(self, 200, {'msg': 'Removed Participant'})
+
 
     def put(self):
         """Handles REST PUT verb with JSON payload."""
@@ -521,7 +564,7 @@ class GatheringEntity(entities.BaseEntity):
         entity = cls()
         entity.title = title
         entity.start_time = utc.now_as_datetime()
-        entity.end_time = entitity.start_time + datetime.timedelta(minutes=30)
+        entity.end_time = entity.start_time + datetime.timedelta(minutes=30)
         entity.html = html
         entity.is_draft = is_draft
         return entity
