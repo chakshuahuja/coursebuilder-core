@@ -6,8 +6,12 @@ GATHERING_BODY_DESCRIPTION = """
 This is the message of the gathering.
 """
 
-GATHERING_DATE_DESCRIPTION = """
-This places a date on your gathering.
+GATHERING_START_TIME_DESCRIPTION = """
+Start time of your Gathering.
+"""
+
+GATHERING_END_TIME_DESCRIPTION = """
+End time of your Gathering.
 """
 
 GATHERING_STATUS_DESCRIPTION = """

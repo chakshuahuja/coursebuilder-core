@@ -22,6 +22,7 @@ import collections
 import datetime
 import os
 import urllib
+import random
 
 import jinja2
 
@@ -116,8 +117,17 @@ class GatheringsHandlerMixin(object):
             item = transforms.entity_to_dict(item_entitiy)
             if user:
                 item['joined'] = item_entitiy.key() in joined_gatherings
-            # add 'edit' actions
+            now = utc.now_as_datetime()
+            if now < item_entitiy.start_time:
+                item['status'] = 'future'
+                del item['vc_url']
+            elif now > item_entitiy.end_time:
+                item['status'] = 'past'
+                del item['vc_url']
+            else:
+                item['status'] = 'present'
 
+            # add 'edit' actions
             if GatheringsRights.can_edit(self):
                 item['edit_action'] = self.get_gathering_action_url(
                     GatheringsDashboardHandler.EDIT_ACTION, key=item['key'])
@@ -303,15 +313,18 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
                 'excludedCustomTags': tags.EditorBlacklists.COURSE_SCOPE},
             optional=True))
         schema.add_property(schema_fields.SchemaField(
+            'vc_url', 'VC URL', 'url', editable=False,
+            description='Link to Video Conference'))
+        schema.add_property(schema_fields.SchemaField(
             'start_time', 'Start Time', 'datetime',
-            description=messages.GATHERING_DATE_DESCRIPTION,
+            description=messages.GATHERING_START_TIME_DESCRIPTION,
             extra_schema_dict_values={
                 '_type': 'datetime',
                 'className': 'inputEx-CombineField gcb-datetime '
                 'inputEx-fieldWrapper inputEx-required'}))
         schema.add_property(schema_fields.SchemaField(
             'end_time', 'End Time', 'datetime',
-            description=messages.GATHERING_DATE_DESCRIPTION,
+            description=messages.GATHERING_END_TIME_DESCRIPTION,
             extra_schema_dict_values={
                 '_type': 'datetime',
                 'className': 'inputEx-CombineField gcb-datetime '
@@ -358,7 +371,6 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
 
     def post(self):
         '''Handles adding of participants'''
-        # TODO (chaks): Handle Unjoining of event.
         key = self.request.get('key')
         join = self.request.get('action') == 'join'
         gathering = GatheringEntity.get(key) if key else None
@@ -530,6 +542,7 @@ class GatheringEntity(entities.BaseEntity):
     end_time = db.DateTimeProperty()
     html = db.TextProperty(indexed=False)
     is_draft = db.BooleanProperty()
+    vc_url = db.StringProperty()
 
     _MEMCACHE_KEY = 'gatherings'
 
@@ -567,6 +580,7 @@ class GatheringEntity(entities.BaseEntity):
         entity.end_time = entity.start_time + datetime.timedelta(minutes=30)
         entity.html = html
         entity.is_draft = is_draft
+        entity.vc_url = 'https://meet.jit.si/%032x' % random.getrandbits(128)
         return entity
 
     def put(self):

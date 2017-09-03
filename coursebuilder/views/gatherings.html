@@ -21,13 +21,15 @@
     mutateGatheringParticipation('join', gid, btn, function() {
       console.log($('#leave_'+ gid));
       $('#leave_'+ gid).show();
+      $('#vc_'+ gid).show();
     });
 
   }
   function leaveGathering(gid, btn) {
     mutateGatheringParticipation('leave', gid, btn, function() {
       console.log($('join_'+ gid));
-      $('#join_'+ gid).show()
+      $('#join_'+ gid).show();
+      $('#vc_'+ gid).hide();
     });
   }
   function mutateGatheringParticipation(action, gid, btn, cb) {
@@ -75,6 +77,7 @@
             <span class="gcb-announcement-title">
               {{ item.title }}
               {% if item.is_draft %}(Private){% endif %}
+              {{item.status}}
             </span>
             {% if item.edit_action %}
               <a href="{{ item.edit_action }}"
@@ -103,6 +106,20 @@
               {% if not item.joined %} style="display: none;"{% endif %}>
               Leave
             </button>
+            {% if item.vc_url %}
+            <a
+              id="vc_{{item.key}}"
+              {% if not item.joined %} style="display: none;"{% endif %}
+              href="{{item.vc_url}}"
+              target="_blank">
+              <button
+                title="Click here to participate"
+                class="gcb-button gcb-button-author">
+                Go to Video Conference
+              </button>
+            </a>
+            {% endif %}
+
           </p>
         {% endfor %}
       {% else %}
