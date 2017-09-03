@@ -194,6 +194,8 @@ class GatheringsStudentHandler(
             items,
             self.get_user(),
         )
+        self.template_value['gatherings_post_url'] = \
+            GatheringsItemRESTHandler.URL.lstrip('/')
         self._render()
 
     def _render(self):
@@ -248,7 +250,7 @@ class GatheringsDashboardHandler(
         schema = GatheringsItemRESTHandler.SCHEMA()
 
         exit_url = self.canonicalize_url('/{}'.format(self.LIST_URL))
-        rest_url = self.canonicalize_url('/rest/gatherings/item')
+        rest_url = self.canonicalize_url(GatheringsItemRESTHandler.URL)
         form_html = oeditor.ObjectEditor.get_html_for(
             self,
             schema.get_json_schema(),
@@ -301,9 +303,8 @@ class GatheringsDashboardHandler(
 
 class GatheringsItemRESTHandler(utils.BaseRESTHandler):
     """Provides REST API for an gathering."""
-    #TODO (chaks): Dont like the /item here
-    URL = '/rest/gatherings/item'
 
+    URL = '/rest/gatherings/item'
     ACTION = 'gathering-put'
     STATUS_ACTION = 'set_draft_status_gathering'
 

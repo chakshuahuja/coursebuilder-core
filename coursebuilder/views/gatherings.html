@@ -34,8 +34,7 @@
   }
   function mutateGatheringParticipation(action, gid, btn, cb) {
     $.ajax({
-      // TODO (chaks): Dehardcode this URL
-      url: "rest/gatherings/item",
+      url: "{{ gatherings_post_url }}",
       type: "POST",
       data: {key: gid, action: action},
       dataType: "text",
@@ -64,10 +63,7 @@
         {% endif %}
         {% if not gatherings.children %}
           {# I18N: Shown if the list of gatherings is empty. #}
-          {# TODO (chaks): Change the class #}
-          <p class="gcb-announcement-content">
-            {{ gettext('Currently, there are no gatherings.') }}
-          </p>
+          <p>{{ gettext('Currently, there are no gatherings.') }}</p>
         {% endif %}
         {% for item in gatherings.children %}
           <div
@@ -76,12 +72,8 @@
             {% endif %}>
             <hr>
             <h2>
-              <a name='{{ item.key }}'></a>
-              {# TODO (chaks): Change the class #}
-              <span class="gcb-announcement-title">
-                {{ item.title }}
-                {% if item.is_draft %}(Private){% endif %}
-
+              <span>
+                {{ item.title }} {% if item.is_draft %}(Private){% endif %}
               </span>
               {% if item.edit_action %}
                 <a href="{{ item.edit_action }}"
@@ -95,28 +87,10 @@
                 {{item.status|title}}
               </span>
             </p>
-
-            {# TODO (chaks): Change the class #}
-            <p class="gcb-announcement-content" "margin: 20px 0px;">
+            <p "margin: 20px 0px;">
               {{ item.html | gcb_tags }}
             </p>
             <p>
-              <button
-                id="join_{{item.key}}"
-                {% if item.status == 'past' %}disabled{% endif %}
-                onclick="joinGathering('{{item.key}}', this)"
-                class="gcb-button gcb-button-author"
-                {% if item.joined %} style="display: none;"{% endif %}>
-                Join
-              </button>
-              <button
-                id="leave_{{item.key}}"
-                {% if item.status == 'past' %}disabled{% endif %}
-                onclick="leaveGathering('{{item.key}}', this)"
-                class="gcb-button"
-                {% if not item.joined %} style="display: none;"{% endif %}>
-                Leave
-              </button>
               <a
                 id="vc_{{item.key}}"
                 {% if not item.joined %} style="display: none;"{% endif %}
@@ -135,6 +109,22 @@
                   {% endif %}
                 </button>
               </a>
+              <button
+                id="join_{{item.key}}"
+                {% if item.status == 'past' %}disabled{% endif %}
+                onclick="joinGathering('{{item.key}}', this)"
+                class="gcb-button gcb-button-author"
+                {% if item.joined %} style="display: none;"{% endif %}>
+                Join
+              </button>
+              <button
+                id="leave_{{item.key}}"
+                {% if item.status == 'past' %}disabled{% endif %}
+                onclick="leaveGathering('{{item.key}}', this)"
+                class="gcb-button"
+                {% if not item.joined %} style="display: none;"{% endif %}>
+                Leave
+              </button>
             </p>
           </div>
         {% endfor %}
