@@ -103,6 +103,7 @@
             <p>
               <button
                 id="join_{{item.key}}"
+                {% if item.status == 'past' %}disabled{% endif %}
                 onclick="joinGathering('{{item.key}}', this)"
                 class="gcb-button gcb-button-author"
                 {% if item.joined %} style="display: none;"{% endif %}>
@@ -110,24 +111,30 @@
               </button>
               <button
                 id="leave_{{item.key}}"
+                {% if item.status == 'past' %}disabled{% endif %}
                 onclick="leaveGathering('{{item.key}}', this)"
                 class="gcb-button"
                 {% if not item.joined %} style="display: none;"{% endif %}>
                 Leave
               </button>
-              {% if item.vc_url %}
               <a
                 id="vc_{{item.key}}"
                 {% if not item.joined %} style="display: none;"{% endif %}
                 href="{{item.vc_url}}"
                 target="_blank">
                 <button
+                  {% if not item.vc_url %}disabled{% endif %}
                   title="Click here to participate"
                   class="gcb-button gcb-button-author">
-                  Go to Video Conference
+                  {% if item.status == 'past' %}
+                    Archived Video Conference Link
+                  {% elif item.status == 'ongoing'%}
+                    Go to Video Conference
+                  {% else %}
+                    Video Conference Link Comming Soon
+                  {% endif %}
                 </button>
               </a>
-              {% endif %}
             </p>
           </div>
         {% endfor %}
