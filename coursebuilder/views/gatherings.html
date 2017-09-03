@@ -15,6 +15,14 @@
 {% endblock %}
 
 {% block main_content %}
+<script>
+  function joinGathering(gid, btn) {
+    setTimeout(function() {
+      btn.innerText = 'Joined'
+      btn.disabled = true;
+    }, 1000);
+  }
+</script>
 <div id="gcb-main">
   <div class="gcb-article tab-content">
     <div class="gcb-aside">
@@ -54,7 +62,14 @@
           </h2>
           <p>Start Time: {{item.start_time}}</p>
           <p>End Time: {{item.end_time}}</p>
-
+          <p class="gcb-announcement-content" "margin: 20px 0px;">
+            <button
+              onclick="joinGathering('{{item.key}}', this)"
+              class="gcb-button gcb-button-author"
+              {% if item.joined %}disabled{% endif %}>
+              {% if item.joined %}Joined {% else %} Join {% endif %}
+            </button>
+          </p>
           {# TODO (chaks): Change the class #}
           <p class="gcb-announcement-content" "margin: 20px 0px;">
             {{ item.html | gcb_tags }}

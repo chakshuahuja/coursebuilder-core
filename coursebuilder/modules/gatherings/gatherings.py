@@ -40,6 +40,7 @@ from models import custom_modules
 from models import entities
 from models import models
 from models import roles
+from models.student_work import KeyProperty
 from models import transforms
 from modules.gatherings import messages
 from modules.dashboard import dashboard
@@ -97,12 +98,26 @@ class GatheringsHandlerMixin(object):
             '{}?{}'.format(
                 GatheringsDashboardHandler.URL, urllib.urlencode(args)))
 
-    def format_items_for_template(self, items):
+    def format_items_for_template(self, items, user=None):
         """Formats a list of entities into template values."""
         template_items = []
-        for item in items:
-            item = transforms.entity_to_dict(item)
+
+        joined_gatherings = {}
+        if user:
+            joined_gatherings = {
+                gu.gathering
+                for gu in
+                    GatheringsUsersEntity
+                    .all()
+                    .filter('user =', user.user_id())
+                    .filter('gathering IN', [i.key() for i in items])
+            }
+        for item_entitiy in items:
+            item = transforms.entity_to_dict(item_entitiy)
+            if user:
+                item['joined'] = item_entitiy.key() in joined_gatherings
             # add 'edit' actions
+
             if GatheringsRights.can_edit(self):
                 item['edit_action'] = self.get_gathering_action_url(
                     GatheringsDashboardHandler.EDIT_ACTION, key=item['key'])
@@ -154,7 +169,9 @@ class GatheringsStudentHandler(
         items = GatheringEntity.get_gatherings(locale=locale)
         items = GatheringsRights.apply_rights(self, items)
         self.template_value['gatherings'] = self.format_items_for_template(
-            items)
+            items,
+            self.get_user(),
+        )
         self._render()
 
     def _render(self):
@@ -541,6 +558,10 @@ class GatheringEntity(entities.BaseEntity):
             item.title = str(fake_item.dict['title'])
             item.html = str(fake_item.dict['html'])
 
+
+class GatheringsUsersEntity(entities.BaseEntity):
+    gathering = KeyProperty(kind=GatheringEntity.kind())
+    user = db.StringProperty()
 
 class TranslatableResourceGathering(
     i18n_dashboard.AbstractTranslatableResourceType):
