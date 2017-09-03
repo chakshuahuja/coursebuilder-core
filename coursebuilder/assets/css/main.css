@@ -398,6 +398,30 @@ a.gcb-button-action, button.gcb-button-action {
   border: 1px solid #009A5D;
 }
 
+.gcb-gathering {
+  line-height: 1;
+}
+
+.gcb-past-gathering {
+  opacity: 0.5;
+}
+.gcb-gathering-status {
+  color: white;
+  font-weight: normal;
+  border-radius: 0.2em;
+  padding: 0.3em 0.4em;
+  margin-left: 2px;
+}
+.gcb-gathering-status.gcb-gathering-status-past {
+  background-color: #555;
+}
+.gcb-gathering-status.gcb-gathering-status-upcoming {
+  background-color: hsl(220, 18%, 45%);
+}
+.gcb-gathering-status.gcb-gathering-status-ongoing {
+  background-color: rgba(236, 65, 65, 0.81);
+}
+
 #gcb-nav-x {
   background-color: #4D5B76;
   background-image: linear-gradient(top, #6c7a95, #4d5b76);

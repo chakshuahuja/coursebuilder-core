@@ -121,13 +121,12 @@ class GatheringsHandlerMixin(object):
             start_time = item_entitiy.start_time
             end_time = item_entitiy.end_time
             if now < start_time:
-                item['status'] = 'future'
+                item['status'] = 'upcoming'
                 del item['vc_url']
             elif now > end_time:
                 item['status'] = 'past'
-                del item['vc_url']
             else:
-                item['status'] = 'present'
+                item['status'] = 'ongoing'
 
             start_fmt = '%d %B' + \
                 (' %Y' if start_time.year != now.year else '') + \
@@ -152,6 +151,8 @@ class GatheringsHandlerMixin(object):
             template_items.append(item)
 
         output = {}
+        status_order = ['ongoing', 'upcoming', 'past']
+        template_items = [i for status in status_order for i in template_items if i['status'] == status]
         output['children'] = template_items
 
         # add 'add' action
@@ -324,7 +325,7 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
                 'excludedCustomTags': tags.EditorBlacklists.COURSE_SCOPE},
             optional=True))
         schema.add_property(schema_fields.SchemaField(
-            'vc_url', 'VC URL', 'url', editable=False,
+            'vc_url', 'VC URL', 'string', editable=False,
             description='Link to Video Conference'))
         schema.add_property(schema_fields.SchemaField(
             'start_time', 'Start Time', 'datetime',
