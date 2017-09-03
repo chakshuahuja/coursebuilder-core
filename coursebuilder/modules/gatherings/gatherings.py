@@ -118,14 +118,25 @@ class GatheringsHandlerMixin(object):
             if user:
                 item['joined'] = item_entitiy.key() in joined_gatherings
             now = utc.now_as_datetime()
-            if now < item_entitiy.start_time:
+            start_time = item_entitiy.start_time
+            end_time = item_entitiy.end_time
+            if now < start_time:
                 item['status'] = 'future'
                 del item['vc_url']
-            elif now > item_entitiy.end_time:
+            elif now > end_time:
                 item['status'] = 'past'
                 del item['vc_url']
             else:
                 item['status'] = 'present'
+
+            start_fmt = '%d %B' + \
+                (' %Y' if start_time.year != now.year else '') + \
+                ' %I:%M %p %Z'
+
+            end_fmt = '%I:%M %p %Z' \
+                if start_time.date() == end_time.date() else start_fmt
+            item['start_time'] = start_time.strftime(start_fmt)
+            item['end_time'] = end_time.strftime(end_fmt)
 
             # add 'edit' actions
             if GatheringsRights.can_edit(self):
