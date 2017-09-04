@@ -9,6 +9,6 @@ files:
   - modules/gatherings/__init__.py
   - modules/gatherings/gatherings.py
 #  - modules/gatherings/gatherings_tests.py
-#  - modules/gatherings/templates/gathering_list.html
+  - modules/gatherings/templates/gathering_list.html
   - modules/gatherings/manifest.yaml
   - modules/gatherings/messages.py
