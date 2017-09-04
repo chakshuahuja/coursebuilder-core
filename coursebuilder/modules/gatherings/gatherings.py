@@ -14,7 +14,7 @@
 
 """Classes and methods to create and manage Gatherings."""
 
-__author__ = 'Saifu Angto (saifu@google.com)'
+__author__ = 'Chakshu Ahuja (ahuja.chaks@gmail.com)'
 
 
 import cgi
@@ -553,13 +553,9 @@ class GatheringsItemRESTHandler(utils.BaseRESTHandler):
 
 
 class GatheringEntity(entities.BaseEntity):
-    """A class that represents a persistent database entity of gatherings.
-
-    Note that this class was added to Course Builder prior to the idioms
-    introduced in models.models.BaseJsonDao and friends.  That being the
-    case, this class is much more hand-coded and not well integrated into
-    the structure of callbacks and hooks that have accumulated around
-    entity caching, i18n, and the like.
+    """
+    A class that represents a persistent database entity of gatherings.
+    This should be moved to models 
     """
 
     title = db.StringProperty(indexed=False)
